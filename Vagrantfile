@@ -17,4 +17,7 @@ Vagrant.configure("2") do |config|
 
   SHELL
 
+  # Install newest docker-compose
+  config.vm.provision "shell", path: "install-compose.sh"
+
 end
