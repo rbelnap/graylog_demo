@@ -24,6 +24,14 @@ Vagrant.configure("2") do |config|
     systemctl -q enable docker
     usermod -aG docker vagrant
 
+    # Convenience
+    yum install -y vim
+
+    # Install rsyslog
+    yum install -y rsyslog
+    systemctl start rsyslog
+    systemctl -q enable rsyslog
+
   SHELL
 
   # Install newest docker-compose
