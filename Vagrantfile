@@ -2,7 +2,13 @@
 
 Vagrant.configure("2") do |config|
   config.vm.box = "centos/7"
-  config.vm.network "private_network", type: "dhcp"
+  config.vm.network "private_network", ip: "172.28.128.30"
+  config.vm.synced_folder ".", "/vagrant", type: "nfs"
+
+  config.vm.provider "virtualbox" do |vbox|
+    vbox.memory = 4096
+    vbox.cpus = 4
+  end
 
   config.vm.provision "shell", inline: <<-SHELL
 
@@ -22,5 +28,12 @@ Vagrant.configure("2") do |config|
 
   # Install newest docker-compose
   config.vm.provision "shell", path: "install-compose.sh"
+
+  # Start compose services
+  config.vm.provision "shell", inline: <<-SHELL
+    cd /vagrant
+    /usr/local/bin/docker-compose -f wordpress.yml up -d 2> /dev/null
+    /usr/local/bin/docker-compose -f graylog.yml up -d 2> /dev/null
+  SHELL
 
 end
