@@ -15,11 +15,11 @@ file="docker-compose-$(uname -s)-$(uname -m)"
 
 # Download latest Docker Compose if that version hasn't been downloaded
 if [ ! -f /tmp/docker_compose_$version ]; then
-  curl -L $url/$file -o /tmp/docker-compose_$version
+  curl -sL $url/$file -o /tmp/docker-compose_$version
 fi
 
 # Is it already installed?
-if installed=$(which docker-compose); then
+if installed=$(which docker-compose 2> /dev/null); then
 
   new_chksum=$(sha256sum /tmp/docker-compose_$version)
   old_chksum=$(sha256sum /usr/local/bin/docker-compose)
