@@ -13,6 +13,7 @@ Vagrant.configure("2") do |config|
         https://download.docker.com/linux/centos/docker-ce.repo
     yum install -y docker-ce docker-ce-cli containerd.io
     systemctl start docker
+    systemctl -q enable docker
     usermod -aG docker vagrant
 
   SHELL
