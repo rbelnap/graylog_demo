@@ -14,6 +14,10 @@ Vagrant.configure("2") do |config|
 
   config.vm.provision "shell", inline: <<-SHELL
 
+    # Set SELinux to permissive
+    setenforce 0
+    sed -i "s/SELINUX=enforcing/SELINUX=permissive/g" /etc/selinux/config
+
     # Import GPG keys
     curl -s https://download.docker.com/linux/centos/gpg -o docker-key
     rpm --import docker-key /etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-7
