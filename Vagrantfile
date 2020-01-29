@@ -40,6 +40,10 @@ Vagrant.configure("2") do |config|
     systemctl start rsyslog
     systemctl -q enable rsyslog
 
+    # Enable TCP syslog reception
+    sed -i 's/#\$ModLoad imtcp/\$ModLoad imtcp/g' /etc/rsyslog.conf
+    sed -i 's/#\$InputTCPServerRun 514/\$InputTCPServerRun 514/g' /etc/rsyslog.conf
+
     # Add rsyslog forwarding option if it does not exist
     if ! grep -q "#{PRIVATE_NET_IP}:1514" /etc/rsyslog.conf; then
       echo "*.* @@#{PRIVATE_NET_IP}:1514;RSYSLOG_SyslogProtocol23Format" >> /etc/rsyslog.conf
