@@ -26,6 +26,8 @@ Vagrant.configure("2") do |config|
     yum-config-manager --add-repo \
         https://download.docker.com/linux/centos/docker-ce.repo
     yum install -y docker-ce docker-ce-cli containerd.io
+    mkdir -p /etc/docker/
+    cp --update /vagrant/docker-daemon.json /etc/docker/daemon.json
     systemctl start docker
     systemctl -q enable docker
     usermod -aG docker vagrant

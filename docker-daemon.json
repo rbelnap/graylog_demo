@@ -1,0 +1,6 @@
+{
+  "log-driver": "gelf",
+  "log-opts":  {
+    "gelf-address": "tcp://172.28.128.30:12201"
+  }
+}
