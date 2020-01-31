@@ -3,11 +3,13 @@ version: '3.7'
 services:
   mongo:
     image: mongo:4.2.2
+    restart: always
     networks:
       - graylog
 
   elasticsearch:
     image: elasticsearch:6.8.6
+    restart: always
     environment:
       - http:host=0.0.0.0
       - transport.host=localhost
@@ -22,6 +24,7 @@ services:
 
   graylog:
     image: graylog/graylog:3.1.4
+    restart: always
     environment:
       - GRAYLOG_PASSWORD_SECRET=LongerPassword01
       # Password: admin
