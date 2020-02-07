@@ -24,5 +24,10 @@ services:
        WORDPRESS_DB_USER: wordpress
        WORDPRESS_DB_PASSWORD: Password1
        WORDPRESS_DB_NAME: wordpress
+     logging:
+       driver: "fluentd"
+       options:
+        fluentd-address: "tcp://127.0.0.1:24224"
+
 volumes:
     db_data: {}

@@ -1,6 +1,16 @@
 version: '3.7'
 
 services:
+
+  fluentd:
+    build: ./fluentd
+    restart: always
+    networks:
+      - graylog
+    ports:
+      - 24224:24224
+      - 24224:24224/udp
+
   mongo:
     image: mongo:4.2.2
     restart: always

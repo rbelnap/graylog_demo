@@ -26,8 +26,6 @@ Vagrant.configure("2") do |config|
     yum-config-manager --add-repo \
         https://download.docker.com/linux/centos/docker-ce.repo
     yum install -y docker-ce docker-ce-cli containerd.io
-    mkdir -p /etc/docker/
-    cp --update /vagrant/docker-daemon.json /etc/docker/daemon.json
     systemctl start docker
     systemctl -q enable docker
     usermod -aG docker vagrant
@@ -58,8 +56,8 @@ Vagrant.configure("2") do |config|
   # Start compose services
   config.vm.provision "shell", inline: <<-SHELL
     cd /vagrant
-    /usr/local/bin/docker-compose -f wordpress.yml up -d 2> /dev/null
     /usr/local/bin/docker-compose -f graylog.yml up -d 2> /dev/null
+    /usr/local/bin/docker-compose -f wordpress.yml up -d 2> /dev/null
   SHELL
 
 end
