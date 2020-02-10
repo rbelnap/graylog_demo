@@ -10,6 +10,7 @@ services:
     ports:
       - 24224:24224
       - 24224:24224/udp
+      - 5140:5140/udp
 
   mongo:
     image: mongo:4.2.2
