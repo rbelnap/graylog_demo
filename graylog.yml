@@ -5,6 +5,8 @@ services:
   fluentd:
     build: ./fluentd
     restart: always
+    volumes:
+      - /var/log:/var/log/hostlogs
     networks:
       - graylog
     ports:

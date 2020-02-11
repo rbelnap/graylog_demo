@@ -33,6 +33,11 @@ Vagrant.configure("2") do |config|
     # Convenience
     yum install -y vim
 
+    # Install apache
+    yum install -y httpd
+    systemctl start httpd
+    systemctl -q enable httpd
+
     # Install rsyslog
     yum install -y rsyslog
     systemctl start rsyslog
