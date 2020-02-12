@@ -5,6 +5,8 @@ services:
   traefik:
     image: traefik:2.1.4
     restart: always
+    networks:
+      - traefik-net
     ports:
       - 8080:80
     command:
@@ -12,12 +14,13 @@ services:
       - "--providers.docker.exposedbydefault=false"
       - "--entrypoints.web.address=:80"
       - "--api.dashboard=true"
+      - "--log.level=DEBUG"
     labels:
-      - "traefik.http.routers.traefik.rule=Host(`172.28.128.30`)"
+      - "traefik.http.routers.traefik.rule=Host(`traefik.172.28.128.30.xip.io`)"
       - 'traefik.http.middlewares.auth.basicauth.users=admin:$$apr1$$T1l.BCFz$$Jyg8msXYEAUi3LLH39I9d1'
       - "traefik.http.routers.traefik.middlewares=auth@docker"
       - "traefik.http.routers.traefik.service=api@internal"
-      - "traefik.docker.network=proxy_traefik-net"
+      - "traefik.docker.network=vagrant_traefik-net"
       - "traefik.enable=true"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
@@ -63,8 +66,14 @@ services:
       # Password: admin
       - GRAYLOG_ROOT_PASSWORD_SHA2=8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918
       - GRAYLOG_HTTP_EXTERNAL_URI=http://172.28.128.30:9000/
+    labels:
+      - "traefik.http.routers.graylog.rule=Host(`graylog.172.28.128.30.xip.io`)"
+      - "traefik.http.services.graylog.loadbalancer.server.port=9000"
+      - "traefik.docker.network=vagrant_traefik-net"
+      - "traefik.enable=true"
     networks:
       - graylog
+      - traefik-net
     depends_on:
       - mongo
       - elasticsearch
