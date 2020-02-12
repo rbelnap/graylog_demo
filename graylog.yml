@@ -2,6 +2,26 @@ version: '3.7'
 
 services:
 
+  traefik:
+    image: traefik:2.1.4
+    restart: always
+    ports:
+      - 8080:80
+    command:
+      - "--providers.docker"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+      - "--api.dashboard=true"
+    labels:
+      - "traefik.http.routers.traefik.rule=Host(`172.28.128.30`)"
+      - 'traefik.http.middlewares.auth.basicauth.users=admin:$$apr1$$T1l.BCFz$$Jyg8msXYEAUi3LLH39I9d1'
+      - "traefik.http.routers.traefik.middlewares=auth@docker"
+      - "traefik.http.routers.traefik.service=api@internal"
+      - "traefik.docker.network=proxy_traefik-net"
+      - "traefik.enable=true"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+
   fluentd:
     build: ./fluentd
     restart: always
@@ -61,5 +81,6 @@ services:
       - 12201:12201/udp
 
 networks:
+  traefik-net:
   graylog:
     driver: bridge
