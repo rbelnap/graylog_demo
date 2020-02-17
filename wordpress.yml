@@ -11,25 +11,35 @@ services:
       MYSQL_USER: wordpress
       MYSQL_PASSWORD: Password1
       MYSQL_RANDOM_ROOT_PASSWORD: '1'
+    networks:
+      - default
 
   wordpress:
     depends_on:
       - db
     image: wordpress:latest
-    ports:
-      - "8000:80"
     restart: always
     environment:
       WORDPRESS_DB_HOST: db:3306
       WORDPRESS_DB_USER: wordpress
       WORDPRESS_DB_PASSWORD: Password1
       WORDPRESS_DB_NAME: wordpress
+    networks:
+      - default
+      - traefik-net
+    labels:
+      - "traefik.http.routers.wordpress.rule=Host(`wordpress.172.28.128.30.xip.io`)"
+      - "traefik.docker.network=vagrant_traefik-net"
+      - "traefik.enable=true"
     logging:
       driver: "fluentd"
       options:
        fluentd-address: "tcp://127.0.0.1:24224"
        # Messages are buffered until the connection is established
        #fluentd-async-connect: "true"
+
+networks:
+  traefik-net:
 
 volumes:
   db_data: {}
