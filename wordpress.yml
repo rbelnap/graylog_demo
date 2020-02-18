@@ -35,6 +35,7 @@ services:
       driver: "fluentd"
       options:
        fluentd-address: "tcp://127.0.0.1:24224"
+       tag: devel.kris
        # Messages are buffered until the connection is established
        #fluentd-async-connect: "true"
 
