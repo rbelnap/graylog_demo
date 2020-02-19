@@ -57,8 +57,9 @@ Vagrant.configure("2") do |config|
   # Start compose services
   config.vm.provision "shell", inline: <<-SHELL
     cd /vagrant
-    /usr/local/bin/docker-compose -f graylog.yml up -d 2> /dev/null
-    /usr/local/bin/docker-compose -f wordpress.yml up -d 2> /dev/null
+    /usr/local/bin/docker-compose up -d 2> /dev/null
+    cd /vagrant/wordpress
+    /usr/local/bin/docker-compose up -d 2> /dev/null
   SHELL
 
 end
