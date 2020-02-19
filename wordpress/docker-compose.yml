@@ -40,6 +40,8 @@ services:
 
 networks:
   traefik-net:
+    external:
+      name: vagrant_traefik-net
 
 volumes:
   db_data: {}
