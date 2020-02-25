@@ -60,6 +60,15 @@ Vagrant.configure("2") do |config|
     /usr/local/bin/docker-compose up -d 2> /dev/null
     cd /vagrant/wordpress
     /usr/local/bin/docker-compose up -d 2> /dev/null
+    echo "Waiting 60 seconds for Graylog to become available..."
+    sleep 60
+    cd /vagrant
+    curl -i -X POST \
+        -H "Content-Type: application/json" \
+        -H "X-Requested-By: cli" \
+        -u admin:admin \
+        "http://graylog.172.28.128.30.xip.io:8080/api/system/inputs" \
+        -d @GELFUDPInput.json
   SHELL
 
 end
