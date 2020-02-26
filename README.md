@@ -8,7 +8,7 @@ This demonstration assumes you are familiar with using Vagrant + VirtualBox to a
 #### Notes about setup
 - This demonstration uses Traefik for routing and the [xip.io](http://xip.io/) wildcard DNS service. If DNS fails to resolve you may want to set the domains to the IP inside your operating system's hosts file.
 
-- Vagrant will provision a virtual machine with a static private Class B address (specifically `172.28.128.30`). If you would like to change this IP address to something different you will need to change the `PRIVATE_NET_IP` variable in the `Vagrantfile` and the few wildcard DNS references to it in the two `docker-compose.yml` files.
+- Vagrant will provision a virtual machine with a static private Class B address (specifically `172.28.128.30`). If you would like to change this IP address to something different you will need to change the `PRIVATE_NET_IP` variable and the scripted API calls in the `Vagrantfile`. You'll also need to modify the few wildcard DNS references to it in the two `docker-compose.yml` files.
 
 - Vagrant is set to allocate 4 cores and 4 GB of RAM, you may need to adjust this for your machine if necessary.
 
@@ -24,15 +24,9 @@ _This section assumes you will be using the default `172.28.128.30` IP address_
 2. Create and provision the VM using `vagrant up`
 3. Navigate to [http://graylog.172.28.128.30.xip.io:8080/](http://graylog.172.28.128.30.xip.io:8080/)
 4. Login using `admin` for both the username and password.
-5. Navigate to Inputs: `System > Inputs`
-6. Select input `GELF UDP` and `Launch new input`
-6. Check the `Global` option at the top and give it a name _(e.g. Fluentd)_ then save it
-8. Ensure it starts running automatically then click `Show received messages`
-9. Press the start button on the top right to start updating the feed every second
-
-#### Syslog Test
-1. Go back to the terminal inside the project's directory and type `vagrant ssh`
-2. You can test Syslog collection with `logger` e.g. `logger -t test Hello world` (or just wait for some to appear)
+5. Click on `Search` on the top menu on the left
+6. You may want to "Search in all messages" on the left under the top menu
+7. Press the start button on the top right to start updating the feed every second
 
 #### Docker Test
 - Generate Docker logs by simply navigating to the WordPress install page [http://wordpress.172.28.128.30.xip.io:8080/](http://wordpress.172.28.128.30.xip.io:8080/)
@@ -40,6 +34,9 @@ _This section assumes you will be using the default `172.28.128.30` IP address_
 #### File Test
 - Collect logs from Apache's `access_log` file by going to [http://172.28.128.30/](http://172.28.128.30/)
 
+#### Syslog Test
+1. Go back to the terminal inside the project's directory and type `vagrant ssh`
+2. You can test Syslog collection with `logger` e.g. `logger -t test Hello world` (or just wait for some to appear)
 
 ### Copyrights and Licenses
 Copyright (C) 2020  Kris Lamoureux
