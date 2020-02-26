@@ -6,7 +6,13 @@ This is a demonstration of Graylog, a centralized log management system featurin
 This demonstration assumes you are familiar with using Vagrant + VirtualBox to automate the installation of virtual machines, although you can reference the Vagrantfile's shell provisioning sections to manually set up a system if you so desire. Please install these prerequisites before attempting the quick start below.
 
 #### Notes about setup
-- This demonstration uses Traefik for routing and the [xip.io](http://xip.io/) wildcard DNS service. If DNS fails to resolve you may want to set the domains to the IP inside your operating system's hosts file.
+- This demonstration uses Traefik for routing and the [xip.io](http://xip.io/) wildcard DNS service. If DNS fails to resolve for whatever reason you may want to set the domains to the IP inside your operating system's hosts file, e.g.
+
+```
+172.28.128.30   traefik.172.28.128.30.xip.io
+172.28.128.30   graylog.172.28.128.30.xip.io
+172.28.128.30   wordpress.172.28.128.30.xip.io
+```
 
 - Vagrant will provision a virtual machine with a static private Class B address (specifically `172.28.128.30`). If you would like to change this IP address to something different you will need to change the `PRIVATE_NET_IP` variable and the scripted API calls in the `Vagrantfile`. You'll also need to modify the few wildcard DNS references to it in the two `docker-compose.yml` files.
 
@@ -14,6 +20,7 @@ This demonstration assumes you are familiar with using Vagrant + VirtualBox to a
 
 - After deploying, Graylog takes the longest to become available and it may take 30 seconds to a few minutes to bring it up depending on your machine.
 
+- The [Traefik dashboard](http://traefik.172.28.128.30.xip.io:8080/dashboard/#/) is available using `admin` for both the username and password.
 
 #### _This project is a demonstration only and should not be used in a production environment._
 
