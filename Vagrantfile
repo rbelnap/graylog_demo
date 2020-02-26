@@ -20,7 +20,9 @@ Vagrant.configure("2") do |config|
 
     # Import GPG keys
     curl -s https://download.docker.com/linux/centos/gpg -o docker-key
-    rpm --import docker-key /etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-7
+    rpm --import docker-key \
+      /etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-7 \
+      http://download.fedoraproject.org/pub/epel/RPM-GPG-KEY-EPEL-7
 
     # Install Docker Community Edition
     yum-config-manager --add-repo \
@@ -32,6 +34,10 @@ Vagrant.configure("2") do |config|
 
     # Convenience
     yum install -y vim
+
+    # Install jq
+    yum install -y epel-release
+    yum install -y jq
 
     # Install apache
     yum install -y httpd
@@ -54,16 +60,58 @@ Vagrant.configure("2") do |config|
   # Install newest docker-compose
   config.vm.provision "shell", path: "install-compose.sh"
 
-  # Start compose services
+  # Start compose services and add default input
   config.vm.provision "shell", inline: <<-SHELL
+    # Bring up containers
     cd /vagrant
     /usr/local/bin/docker-compose up -d 2> /dev/null
     cd /vagrant/wordpress
     /usr/local/bin/docker-compose up -d 2> /dev/null
-    echo "Waiting 60 seconds for Graylog to become available..."
-    sleep 60
     cd /vagrant
-    curl -i -X POST \
+
+    # Wait 120 seconds for Graylog to come online
+    SECONDS=0
+    while true
+    do
+      GRAYLOG_STATE=$(
+        docker inspect vagrant_graylog_1 \
+          | jq --raw-output '.[] | .State.Health.Status')
+
+      if [[ "$GRAYLOG_STATE" == "healthy" ]]; then
+        echo "Graylog is available."
+        sleep 5
+        break
+      elif [[ $GRAYLOG_STATE != "starting" ]]; then
+        echo "Something is wrong with Graylog. Aborting."
+        exit 1
+      elif [[ $SECONDS -le 120 ]]; then
+        echo "Waiting for Graylog ($SECONDS/120 seconds)"
+        sleep 10
+      else
+        echo "Waiting on Graylog timed out. Aborting."
+        exit 1
+      fi
+    done
+
+    # Check for existing GELF UDP Input
+    INPUTSTATE=$(
+      curl -s -X GET \
+          -H "Content-Type: application/json" \
+          -H "X-Requested-By: cli" \
+          -u admin:admin \
+          "http://graylog.172.28.128.30.xip.io:8080/api/system/inputstates")
+
+    INPUT_TYPES=$(echo $INPUTSTATE | jq --raw-output '.states | .[] | .message_input.type')
+
+    for TYPE in $INPUT_TYPES; do
+      if [[ "$TYPE" == "org.graylog2.inputs.gelf.udp.GELFUDPInput" ]]; then
+        echo "Found GELF UDP input in Graylog, aborting input installation."
+        exit
+      fi
+    done
+
+    # Install GELF UDP Input
+    curl -i -s -X POST \
         -H "Content-Type: application/json" \
         -H "X-Requested-By: cli" \
         -u admin:admin \
