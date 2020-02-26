@@ -59,7 +59,7 @@ services:
       - graylog
 
   graylog:
-    image: graylog/graylog:3.2.1
+    image: graylog/graylog:3.2.2
     restart: always
     environment:
       - GRAYLOG_PASSWORD_SECRET=LongerPassword01
