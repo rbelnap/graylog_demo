@@ -81,7 +81,7 @@ Vagrant.configure("2") do |config|
         echo "Graylog is available."
         sleep 5
         break
-      elif [[ $GRAYLOG_STATE != "starting" ]]; then
+      elif [[ "$GRAYLOG_STATE" != "starting" ]]; then
         echo "Something is wrong with Graylog. Aborting."
         exit 1
       elif [[ $SECONDS -le 120 ]]; then
@@ -93,7 +93,7 @@ Vagrant.configure("2") do |config|
       fi
     done
 
-    # Check for existing GELF UDP Input
+    # Check for existing GELF TCP Input
     INPUTSTATE=$(
       curl -s -X GET \
           -H "Content-Type: application/json" \
@@ -104,19 +104,19 @@ Vagrant.configure("2") do |config|
     INPUT_TYPES=$(echo $INPUTSTATE | jq --raw-output '.states | .[] | .message_input.type')
 
     for TYPE in $INPUT_TYPES; do
-      if [[ "$TYPE" == "org.graylog2.inputs.gelf.udp.GELFUDPInput" ]]; then
-        echo "Found GELF UDP input in Graylog, aborting input installation."
+      if [[ "$TYPE" == "org.graylog2.inputs.gelf.tcp.GELFTCPInput" ]]; then
+        echo "Found GELF TCP input in Graylog, aborting input installation."
         exit
       fi
     done
 
-    # Install GELF UDP Input
+    # Install GELF TCP Input
     curl -i -s -X POST \
         -H "Content-Type: application/json" \
         -H "X-Requested-By: cli" \
         -u admin:admin \
         "http://graylog.172.28.128.30.xip.io:8080/api/system/inputs" \
-        -d @GELFUDPInput.json
+        -d @GELFTCPInput.json
   SHELL
 
 end
