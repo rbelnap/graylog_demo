@@ -30,6 +30,7 @@ services:
     restart: always
     volumes:
       - /var/log:/var/log/hostlogs
+      - /vagrant/pki/fluentd:/fluentd/etc/pki
     networks:
       - graylog
     ports:
@@ -88,6 +89,8 @@ services:
       - 12201:12201
       # GELF UDP
       - 12201:12201/udp
+    volumes:
+      - /vagrant/pki/graylog:/usr/share/graylog/pki
 
 networks:
   traefik-net:

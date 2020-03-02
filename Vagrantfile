@@ -62,6 +62,11 @@ Vagrant.configure("2") do |config|
 
   # Start compose services and add default input
   config.vm.provision "shell", inline: <<-SHELL
+    # Remove old keys and create directories
+    mkdir -p /vagrant/pki
+    rm -r /vagrant/pki/*
+    mkdir -p /vagrant/pki/{fluentd,graylog}
+
     # Bring up containers
     cd /vagrant
     /usr/local/bin/docker-compose up -d 2> /dev/null
@@ -70,6 +75,7 @@ Vagrant.configure("2") do |config|
     cd /vagrant
 
     # Wait 120 seconds for Graylog to come online
+    INSTALL_INPUT=0
     SECONDS=0
     while true
     do
@@ -79,17 +85,18 @@ Vagrant.configure("2") do |config|
 
       if [[ "$GRAYLOG_STATE" == "healthy" ]]; then
         echo "Graylog is available."
+        INSTALL_INPUT=1
         sleep 5
         break
       elif [[ "$GRAYLOG_STATE" != "starting" ]]; then
         echo "Something is wrong with Graylog. Aborting."
-        exit 1
+        break
       elif [[ $SECONDS -le 120 ]]; then
         echo "Waiting for Graylog ($SECONDS/120 seconds)"
         sleep 10
       else
         echo "Waiting on Graylog timed out. Aborting."
-        exit 1
+        break
       fi
     done
 
@@ -106,17 +113,42 @@ Vagrant.configure("2") do |config|
     for TYPE in $INPUT_TYPES; do
       if [[ "$TYPE" == "org.graylog2.inputs.gelf.tcp.GELFTCPInput" ]]; then
         echo "Found GELF TCP input in Graylog, aborting input installation."
-        exit
+        INPUT_INSTALL=1
+        break
       fi
     done
 
     # Install GELF TCP Input
-    curl -i -s -X POST \
-        -H "Content-Type: application/json" \
-        -H "X-Requested-By: cli" \
-        -u admin:admin \
-        "http://graylog.172.28.128.30.xip.io:8080/api/system/inputs" \
-        -d @GELFTCPInput.json
+    if [[ $INSTALL_INPUT -eq 1 ]]; then
+      echo "Installing GELF TCP input"
+      curl -i -s -X POST \
+          -H "Content-Type: application/json" \
+          -H "X-Requested-By: cli" \
+          -u admin:admin \
+          "http://graylog.172.28.128.30.xip.io:8080/api/system/inputs" \
+          -d @GELFTCPInput.json
+    fi
+
+    # Generate and install TLS keys
+    cd /vagrant/pki
+
+    # Generate Graylog's CA
+    openssl genrsa -out rootCA.key 4096 2> /dev/null
+    openssl req -x509 -new -nodes -key rootCA.key -sha256 -days 1024 \
+        -out rootCA.crt -subj "/C=US/ST=GA/O=MyOrg/CN=localhost" 2> /dev/null
+
+    # Generate Fluentd's keys
+    openssl genrsa -out fluentd.key 4096 2> /dev/null
+    openssl req -new -sha256 -key fluentd.key \
+        -subj "/C=US/ST=GA/O=MyOrg/CN=localhost" -out fluentd.csr 2> /dev/null
+
+    # Sign Fluentd's certificate
+    openssl x509 -req -in fluentd.csr -CA rootCA.crt -CAkey rootCA.key \
+        -CAcreateserial -out fluentd-signed.crt -days 500 -sha256 2> /dev/null
+
+    mv fluentd*.* fluentd/
+    mv root*.* graylog/
+
   SHELL
 
 end
