@@ -5,5 +5,5 @@ RUN apt-get update \
  && rm -rf /var/lib/apt/lists/*
 RUN gem install fluent-plugin-rewrite-tag-filter
 RUN gem install fluent-plugin-gelf-hs
-RUN gem install gelf
+RUN gem install gelf -v 3.0.0
 COPY fluent.conf /fluentd/etc/
