@@ -62,10 +62,31 @@ Vagrant.configure("2") do |config|
 
   # Start compose services and add default input
   config.vm.provision "shell", inline: <<-SHELL
+
     # Remove old keys and create directories
     mkdir -p /vagrant/pki
     rm -r /vagrant/pki/*
     mkdir -p /vagrant/pki/{fluentd,graylog}
+
+    # Generate and install TLS keys
+    cd /vagrant/pki
+
+    # Generate Graylog's CA
+    openssl genrsa -out rootCA.key 4096 2> /dev/null
+    openssl req -x509 -new -nodes -key rootCA.key -sha256 -days 1024 \
+        -out rootCA.crt -subj "/C=US/ST=GA/O=MyOrg/CN=localhost" 2> /dev/null
+
+    # Generate Fluentd's keys
+    openssl genrsa -out fluentd.key 4096 2> /dev/null
+    openssl req -new -sha256 -key fluentd.key \
+        -subj "/C=US/ST=GA/O=MyOrg/CN=localhost" -out fluentd.csr 2> /dev/null
+
+    # Sign Fluentd's certificate
+    openssl x509 -req -in fluentd.csr -CA rootCA.crt -CAkey rootCA.key \
+        -CAcreateserial -out fluentd-signed.crt -days 500 -sha256 2> /dev/null
+
+    mv fluentd*.* fluentd/
+    mv root*.* graylog/
 
     # Bring up containers
     cd /vagrant
@@ -128,26 +149,6 @@ Vagrant.configure("2") do |config|
           "http://graylog.172.28.128.30.xip.io:8080/api/system/inputs" \
           -d @GELFTCPInput.json
     fi
-
-    # Generate and install TLS keys
-    cd /vagrant/pki
-
-    # Generate Graylog's CA
-    openssl genrsa -out rootCA.key 4096 2> /dev/null
-    openssl req -x509 -new -nodes -key rootCA.key -sha256 -days 1024 \
-        -out rootCA.crt -subj "/C=US/ST=GA/O=MyOrg/CN=localhost" 2> /dev/null
-
-    # Generate Fluentd's keys
-    openssl genrsa -out fluentd.key 4096 2> /dev/null
-    openssl req -new -sha256 -key fluentd.key \
-        -subj "/C=US/ST=GA/O=MyOrg/CN=localhost" -out fluentd.csr 2> /dev/null
-
-    # Sign Fluentd's certificate
-    openssl x509 -req -in fluentd.csr -CA rootCA.crt -CAkey rootCA.key \
-        -CAcreateserial -out fluentd-signed.crt -days 500 -sha256 2> /dev/null
-
-    mv fluentd*.* fluentd/
-    mv root*.* graylog/
 
   SHELL
 
