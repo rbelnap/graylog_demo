@@ -37,6 +37,7 @@ Vagrant.configure("2") do |config|
     cp --update /vagrant/td-agent.repo /etc/yum.repos.d/
     yum check-update
     yum install -y td-agent
+    td-agent-gem install fluent-plugin-gelf-hs gelf
     cp /vagrant/td-agent.conf /etc/td-agent/td-agent.conf
     systemctl restart td-agent
     systemctl -q enable td-agent
