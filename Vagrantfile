@@ -19,10 +19,11 @@ Vagrant.configure("2") do |config|
     sed -i "s/SELINUX=enforcing/SELINUX=permissive/g" /etc/selinux/config
 
     # Import GPG keys
-    curl -s https://download.docker.com/linux/centos/gpg -o docker-key
-    rpm --import docker-key \
+    rpm --import \
       /etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-7 \
-      http://download.fedoraproject.org/pub/epel/RPM-GPG-KEY-EPEL-7
+      https://download.docker.com/linux/centos/gpg \
+      http://download.fedoraproject.org/pub/epel/RPM-GPG-KEY-EPEL-7 \
+      https://packages.treasuredata.com/GPG-KEY-td-agent
 
     # Install Docker Community Edition
     yum-config-manager --add-repo \
@@ -31,6 +32,13 @@ Vagrant.configure("2") do |config|
     systemctl start docker
     systemctl -q enable docker
     usermod -aG docker vagrant
+
+    # Install td-agent
+    cp --update /vagrant/td-agent.repo /etc/yum.repos.d/
+    yum check-update
+    yum install -y td-agent
+    systemctl start td-agent
+    systemctl -q enable td-agent
 
     # Convenience
     yum install -y vim
