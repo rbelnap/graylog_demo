@@ -33,15 +33,6 @@ Vagrant.configure("2") do |config|
     systemctl -q enable docker
     usermod -aG docker vagrant
 
-    # Install td-agent
-    cp --update /vagrant/td-agent.repo /etc/yum.repos.d/
-    yum check-update
-    yum install -y td-agent
-    td-agent-gem install fluent-plugin-gelf-hs gelf
-    cp /vagrant/td-agent.conf /etc/td-agent/td-agent.conf
-    systemctl restart td-agent
-    systemctl -q enable td-agent
-
     # Convenience
     yum install -y vim
 
@@ -58,6 +49,18 @@ Vagrant.configure("2") do |config|
     yum install -y rsyslog
     systemctl start rsyslog
     systemctl -q enable rsyslog
+
+    # Install td-agent
+    cp /vagrant/td-agent.repo /etc/yum.repos.d/
+    yum check-update
+    yum install -y td-agent
+    td-agent-gem install fluent-plugin-gelf-hs gelf
+    cp /vagrant/td-agent.conf /etc/td-agent/td-agent.conf
+    mkdir /var/log/containers
+    chown -R td-agent:td-agent /var/log/containers
+    chmod -R 755 /var/log
+    systemctl restart td-agent
+    systemctl -q enable td-agent
 
     # Add rsyslog forwarding option if it does not exist
     if ! grep -q "127.0.0.1:5140" /etc/rsyslog.conf; then
