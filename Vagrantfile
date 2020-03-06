@@ -56,7 +56,7 @@ Vagrant.configure("2") do |config|
     yum install -y td-agent
     td-agent-gem install fluent-plugin-gelf-hs gelf
     cp /vagrant/td-agent.conf /etc/td-agent/td-agent.conf
-    mkdir /var/log/containers
+    mkdir -p /var/log/containers
     chown -R td-agent:td-agent /var/log/containers
     chmod -R 755 /var/log
     systemctl restart td-agent
@@ -80,9 +80,35 @@ Vagrant.configure("2") do |config|
     /usr/local/bin/docker-compose up -d 2> /dev/null
     cd /vagrant/wordpress
     /usr/local/bin/docker-compose up -d 2> /dev/null
-    cd /vagrant
+
+    # Create directories and ensure they are empty
+    mkdir -p /home/vagrant/certs/
+    rm -r /home/vagrant/certs/
+    mkdir -p /home/vagrant/certs/{td-agent,graylog}
+
+    # Generate Graylog's CA
+    cd /home/vagrant/certs
+    openssl genrsa -out graylog/rootCA.key 4096 2> /dev/null
+    openssl req -x509 -new -nodes -key graylog/rootCA.key -sha256 -days 1024 \
+        -out graylog/rootCA.crt -subj "/C=US/ST=GA/O=MyOrg/CN=localhost" \
+        2> /dev/null
+
+    # Generate td-agent's keys
+    openssl genrsa -out td-agent/td-agent.key 4096 2> /dev/null
+    openssl req -new -sha256 -key td-agent/td-agent.key \
+        -subj "/C=US/ST=GA/O=MyOrg/CN=localhost" -out td-agent/td-agent.csr \
+        2> /dev/null
+
+    # Sign td-agent's keys
+    openssl x509 -req -in td-agent/td-agent.csr -CA graylog/rootCA.crt \
+        -CAkey graylog/rootCA.key -CAcreateserial -days 1024 -sha256 \
+        -out td-agent/td-agent-signed.crt 2> /dev/null
+
+    # Fix permissions
+    chown -R vagrant:vagrant /home/vagrant/
 
     # Wait 120 seconds for Graylog to come online
+    cd /vagrant
     SECONDS=0
     while true
     do
