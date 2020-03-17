@@ -59,6 +59,8 @@ services:
       - "traefik.http.services.graylog.loadbalancer.server.port=9000"
       - "traefik.docker.network=vagrant_traefik-net"
       - "traefik.enable=true"
+    volumes:
+      - /home/vagrant/certs/graylog:/usr/share/graylog/certs
     networks:
       - graylog
       - traefik-net

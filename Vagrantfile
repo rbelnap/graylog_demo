@@ -106,6 +106,7 @@ Vagrant.configure("2") do |config|
 
     # Fix permissions
     chown -R vagrant:vagrant /home/vagrant/
+    chown -R 1100:1100 /home/vagrant/certs/graylog
 
     # Wait 120 seconds for Graylog to come online
     cd /vagrant
