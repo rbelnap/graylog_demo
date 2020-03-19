@@ -56,7 +56,7 @@ Vagrant.configure("2") do |config|
     yum install -y td-agent
     td-agent-gem install fluent-plugin-gelf-hs gelf
     cp /vagrant/td-agent.conf /etc/td-agent/td-agent.conf
-    mkdir /var/log/containers
+    mkdir -p /var/log/containers
     chown -R td-agent:td-agent /var/log/containers
     chmod -R 755 /var/log
     systemctl restart td-agent
